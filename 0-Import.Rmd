@@ -1,0 +1,42 @@
+---
+title: "Data Import"
+output: html_notebook
+---
+
+
+```{r Packages}
+library("dplyr")
+```
+
+
+```{r Find File}
+
+rawfile <-
+  here::here("Data/Raw/Ungraded soils initial survey (30 Q 15 minutes) - Attempt Details.csv")
+
+```
+
+```{r Load File}
+quiz_raw <- readr::read_csv(rawfile)
+```
+
+```{r Fix Column Names}
+quiz_renamed <- quiz_raw %>% 
+  rename_all(funs(stringr::str_replace_all(., c(
+    " " = "_", "#" = "Number", "\\?" = ""
+  ))))
+```
+
+```{r Clean}
+quiz_clean <- quiz_renamed %>% 
+  select(-c(1:2, 5, 8, 13:14)) %>%
+  mutate(
+    Attempt_Start = lubridate::mdy_hm(Attempt_Start),
+    Attempt_End = lubridate::mdy_hm(Attempt_End)) %>% 
+  filter(Answer_Match == "Checked")
+```
+
+```{r}
+saveRDS(quiz_clean, file = here::here("/Data/Generated/Quiz_Clean"))
+```
+
